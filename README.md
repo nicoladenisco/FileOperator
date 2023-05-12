@@ -2,6 +2,9 @@
 
 ## Simple utility for delete, copy, move massive files.
 
+run fileOperator --help
+or java -jar File...jar --help
+
 ```
 FileOperator - ver. 1.0
 Utility per la cancellazione selettiva di files.
