@@ -1,7 +1,8 @@
 # FileOperator
 
-Simple utility for delete, copy, move massive files.
+## Simple utility for delete, copy, move massive files.
 
+```
 FileOperator - ver. 1.0
 Utility per la cancellazione selettiva di files.
 modo d'uso:
@@ -16,4 +17,4 @@ modo d'uso:
   -D --delete                    attiva cancellazione sui target
   -C --copy <val>                copia i files nella directory indicata
   -M --move <val>                sposta i files nella directory indicata
-
+```
