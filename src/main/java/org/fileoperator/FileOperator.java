@@ -33,8 +33,8 @@ public class FileOperator
   public static final String appVersion = "1.0";
   public static final List<String> dirList = new ArrayList<>();
   public static int maxGiorni, verbose;
-  public static String filtro, filtroExt, dirSposta, dirCopia;
-  public static boolean recurse, dryrun, actionCancella, actionCopia, actionSposta;
+  public static String filtro, filtroEscludi, filtroExt, dirSposta, dirCopia;
+  public static boolean recurse, dryrun, actionCancella, actionCopia, actionSposta, deleteDirEmpty;
   public static final Runner run = new Runner();
 
   public static void initialize(String[] args)
@@ -47,11 +47,13 @@ public class FileOperator
       new LongOptExt("dry-run", LongOpt.NO_ARGUMENT, null, 'd', "dry-run stampa operazioni a console ma non tocca i files"),
       new LongOptExt("verbose", LongOpt.NO_ARGUMENT, null, 'v', "aumenta messagi in output"),
       new LongOptExt("older-days", LongOpt.REQUIRED_ARGUMENT, null, 'G', "eta massima dei file in giorni"),
-      new LongOptExt("filtro", LongOpt.REQUIRED_ARGUMENT, null, 'f', "filtro sui files (.txt,.pip)"),
-      new LongOptExt("filtro-ext", LongOpt.REQUIRED_ARGUMENT, null, 'F', "filtro esteso regular expression"),
+      new LongOptExt("filtro", LongOpt.REQUIRED_ARGUMENT, null, 'f', "filtro per estensione (.txt,.pip)"),
+      new LongOptExt("filtro-escludi", LongOpt.REQUIRED_ARGUMENT, null, 'F', "filtro escludi per estensione (.txt,.pip)"),
+      new LongOptExt("filtro-ext", LongOpt.REQUIRED_ARGUMENT, null, 'E', "filtro esteso regular expression"),
       new LongOptExt("delete", LongOpt.NO_ARGUMENT, null, 'D', "attiva cancellazione sui target"),
       new LongOptExt("copy", LongOpt.REQUIRED_ARGUMENT, null, 'C', "copia i files nella directory indicata"),
       new LongOptExt("move", LongOpt.REQUIRED_ARGUMENT, null, 'M', "sposta i files nella directory indicata"),
+      new LongOptExt("delete-dir", LongOpt.NO_ARGUMENT, null, 'R', "se 'delete' rimuove directory vuote"),
     };
 
     String optString = LongOptExt.getOptstring(longopts);
@@ -87,6 +89,10 @@ public class FileOperator
           break;
 
         case 'F':
+          filtroEscludi = g.getOptarg();
+          break;
+
+        case 'E':
           filtroExt = g.getOptarg();
           break;
 
@@ -101,11 +107,26 @@ public class FileOperator
           actionSposta = true;
           dirSposta = g.getOptarg();
           break;
+        case 'R':
+          deleteDirEmpty = true;
+          break;
 
         default:
           System.out.println("Opzione '" + ((char) c) + "' ignorata.");
       }
     }
+
+    if(g.getOptind() == args.length)
+      help(longopts);
+
+    if(!actionCancella && !actionCopia && !actionSposta)
+    {
+      dryrun = true;
+      System.out.println("Nessuna action specificata; dry-run automatico.");
+    }
+
+    if(dryrun)
+      verbose = 2;
 
     for(int i = g.getOptind(); i < args.length; i++)
     {
@@ -119,7 +140,7 @@ public class FileOperator
        "FileOperator - ver. %s\n"
        + "Utility per la cancellazione selettiva di files.\n"
        + "modo d'uso:\n"
-       + "  fileOperator [-h] dirtodel1 dirtodel2 ...\n", appVersion);
+       + "  fileOperator [options] dirtodel1 dirtodel2 ...\n", appVersion);
 
     for(LongOptExt l : longopts)
     {
