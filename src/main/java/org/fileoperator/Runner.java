@@ -86,25 +86,34 @@ public class Runner
   private void preparaFiltro()
      throws Exception
   {
-    if(FileOperator.filtro != null)
+    if(!FileOperator.filtro.isEmpty())
     {
-      String[] estensioni = FileOperator.filtro.split(",");
-      fileFilters.add(new SuffixFileFilter(estensioni, IOCase.SENSITIVE));
+      for(String sf : FileOperator.filtro)
+      {
+        String[] estensioni = sf.split(",");
+        fileFilters.add(new SuffixFileFilter(estensioni, IOCase.SENSITIVE));
+      }
     }
-    if(FileOperator.filtroExt != null)
+    if(!FileOperator.filtroExt.isEmpty())
     {
-      fileFilters.add(new RegexFileFilter(FileOperator.filtroExt));
+      for(String sf : FileOperator.filtro)
+      {
+        fileFilters.add(new RegexFileFilter(sf));
+      }
+    }
+    if(!FileOperator.filtroEscludi.isEmpty())
+    {
+      for(String sf : FileOperator.filtro)
+      {
+        String[] estensioni = sf.split(",");
+        fileFilters.add(new SuffixFileFilterEscludi(estensioni, IOCase.SENSITIVE));
+      }
     }
     if(FileOperator.maxGiorni != 0)
     {
       GregorianCalendar cal = new GregorianCalendar();
       cal.add(Calendar.DAY_OF_YEAR, -FileOperator.maxGiorni);
       fileFilters.add(new AgeFileFilter(cal.getTime(), true));
-    }
-    if(FileOperator.filtroEscludi != null)
-    {
-      String[] estensioni = FileOperator.filtroEscludi.split(",");
-      fileFilters.add(new SuffixFileFilterEscludi(estensioni, IOCase.SENSITIVE));
     }
 
     switch(fileFilters.size())

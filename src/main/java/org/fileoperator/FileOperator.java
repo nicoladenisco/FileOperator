@@ -31,9 +31,12 @@ import org.commonlib5.utils.StringOper;
 public class FileOperator
 {
   public static final String appVersion = "1.0";
-  public static final List<String> dirList = new ArrayList<>();
   public static int maxGiorni, verbose;
-  public static String filtro, filtroEscludi, filtroExt, dirSposta, dirCopia;
+  public static final List<String> dirList = new ArrayList<>();
+  public static final List<String> filtro = new ArrayList<>();
+  public static final List<String> filtroEscludi = new ArrayList<>();
+  public static final List<String> filtroExt = new ArrayList<>();
+  public static String dirSposta, dirCopia;
   public static boolean recurse, dryrun, actionCancella, actionCopia, actionSposta, deleteDirEmpty;
   public static final Runner run = new Runner();
 
@@ -85,15 +88,15 @@ public class FileOperator
           break;
 
         case 'f':
-          filtro = g.getOptarg();
+          filtro.add(g.getOptarg());
           break;
 
         case 'F':
-          filtroEscludi = g.getOptarg();
+          filtroEscludi.add(g.getOptarg());
           break;
 
         case 'E':
-          filtroExt = g.getOptarg();
+          filtroExt.add(g.getOptarg());
           break;
 
         case 'D':
