@@ -40,7 +40,7 @@ public class Runner
   private final List<IOFileFilter> fileFilters = new ArrayList<>();
   private FileFilter filtro;
   private File dirSposta, dirCopia;
-  private int numCancella, numCopia, numMuovi;
+  private int num, numCancella, numCopia, numMuovi;
 
   public void esegui()
      throws Exception
@@ -86,14 +86,28 @@ public class Runner
   private void preparaFiltro()
      throws Exception
   {
-    if(FileOperator.filtro != null)
+    if(!FileOperator.filtro.isEmpty())
     {
-      String[] estensioni = FileOperator.filtro.split(",");
-      fileFilters.add(new SuffixFileFilter(estensioni, IOCase.SENSITIVE));
+      for(String sf : FileOperator.filtro)
+      {
+        String[] estensioni = sf.split(",");
+        fileFilters.add(new SuffixFileFilter(estensioni, IOCase.SENSITIVE));
+      }
     }
-    if(FileOperator.filtroExt != null)
+    if(!FileOperator.filtroExt.isEmpty())
     {
-      fileFilters.add(new RegexFileFilter(FileOperator.filtroExt));
+      for(String sf : FileOperator.filtro)
+      {
+        fileFilters.add(new RegexFileFilter(sf));
+      }
+    }
+    if(!FileOperator.filtroEscludi.isEmpty())
+    {
+      for(String sf : FileOperator.filtro)
+      {
+        String[] estensioni = sf.split(",");
+        fileFilters.add(new SuffixFileFilterEscludi(estensioni, IOCase.SENSITIVE));
+      }
     }
     if(FileOperator.maxGiorni != 0)
     {
@@ -120,16 +134,30 @@ public class Runner
   private void esegui(File dir)
      throws Exception
   {
+    if(FileOperator.verbose > 0)
+      System.out.println("DIR: " + dir.getAbsolutePath());
+
     File[] files = dir.listFiles(filtro);
 
     if(files != null)
     {
+      boolean closeVerbose = false;
+
       for(File f : files)
       {
         if(!f.isDirectory() && f.canWrite())
         {
-          if(FileOperator.verbose > 0 || FileOperator.dryrun)
+          num++;
+
+          if(FileOperator.verbose == 2)
+          {
             System.out.println("FOUND: " + f.getAbsolutePath());
+          }
+          else if(FileOperator.verbose == 1)
+          {
+            System.out.print(".");
+            closeVerbose = true;
+          }
 
           if(!FileOperator.dryrun)
           {
@@ -153,8 +181,15 @@ public class Runner
                 System.out.println("ERROR: non posso cancellare " + f.getAbsolutePath());
             }
           }
+
+          // periodicamente forza una garbage collection
+          if((num % 1000) == 0)
+            System.gc();
         }
       }
+
+      if(closeVerbose)
+        System.out.println("!");
     }
 
     if(FileOperator.recurse)
@@ -168,6 +203,18 @@ public class Runner
           if(d.isDirectory())
             esegui(d);
         }
+      }
+    }
+
+    if(FileOperator.deleteDirEmpty && !FileOperator.dryrun)
+    {
+      File[] dirs = dir.listFiles();
+      if(dirs == null || dirs.length == 0)
+      {
+        boolean okdelete = dir.delete();
+
+        if(FileOperator.verbose > 0 && !okdelete)
+          System.out.println("ERROR: non posso cancellare " + dir.getAbsolutePath());
       }
     }
   }
